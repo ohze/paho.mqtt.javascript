@@ -985,7 +985,7 @@ Paho.MQTT = (function (global) {
 		this.socket.onerror = scope(this._on_socket_error, this);
 		this.socket.onclose = scope(this._on_socket_close, this);
 		
-		this.sendPinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
+		this.sendPinger = new Pinger(this, window, this.connectOptions.keepAliveInterval - this.connectOptions.timeout);
 		this.receivePinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
 		
 		this._connectTimeout = new Timeout(this, window, this.connectOptions.timeout, this._disconnected,  [ERROR.CONNECT_TIMEOUT.code, format(ERROR.CONNECT_TIMEOUT)]);
