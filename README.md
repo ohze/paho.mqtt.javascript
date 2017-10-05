@@ -25,7 +25,7 @@ Paho reflects the inherent physical and cost constraints of device connectivity.
 
 A zip file containing the full and a minified version the Javascript client can be downloaded from the [Paho downloads page](https://projects.eclipse.org/projects/technology.paho/downloads)
 
-Alternatively the Javascript client can be downloaded directly from the projects git repository: [https://raw.githubusercontent.com/eclipse/paho.mqtt.javascript/master/src/mqttws31.js](https://raw.githubusercontent.com/eclipse/paho.mqtt.javascript/master/src/mqttws31.js).
+Alternatively the Javascript client can be downloaded directly from the projects git repository: [https://raw.githubusercontent.com/eclipse/paho.mqtt.javascript/master/src/paho-mqtt.js](https://raw.githubusercontent.com/eclipse/paho.mqtt.javascript/master/src/paho-mqtt.js).
 
 Please **do not** link directly to this url from your application.
 
@@ -53,7 +53,7 @@ src/tests
 
 To run the tests with maven, use the following command:
 ```
-$ mvn test -Dtest.server=iot.eclipse.com -Dtest.server.port=80 -Dtest.server.path=/ws
+$ mvn test
 ```
 The parameters passed in should be modified to match the broker instance being tested against.
 
@@ -67,7 +67,7 @@ The client should work in any browser fully supporting WebSockets, [http://caniu
 
 ## Getting Started
 
-The included code below is a very basic sample that connects to a server using WebSockets and subscribes to the topic ```/World```, once subscribed, it then publishes the message ```Hello``` to that topic. Any messages that come into the subscribed topic will be printed to the Javascript console.
+The included code below is a very basic sample that connects to a server using WebSockets and subscribes to the topic ```World```, once subscribed, it then publishes the message ```Hello``` to that topic. Any messages that come into the subscribed topic will be printed to the Javascript console.
 
 This requires the use of a broker that supports WebSockets natively, or the use of a gateway that can forward between WebSockets and TCP.
 
@@ -87,9 +87,9 @@ client.connect({onSuccess:onConnect});
 function onConnect() {
   // Once a connection has been made, make a subscription and send a message.
   console.log("onConnect");
-  client.subscribe("/World");
+  client.subscribe("World");
   message = new Paho.MQTT.Message("Hello");
-  message.destinationName = "/World";
+  message.destinationName = "World";
   client.send(message);
 }
 
