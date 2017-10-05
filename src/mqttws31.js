@@ -441,7 +441,7 @@ Paho.MQTT = (function (global) {
 		return buffer;
 	}	
 
-	function decodeMessage(input,pos) {
+	var decodeMessage = function decodeMessage(input,pos) {
 	    var startingPos = pos;
 		var first = input[pos];
 		var type = first >> 4;
@@ -521,19 +521,19 @@ Paho.MQTT = (function (global) {
 		return [wireMessage,endPos];	
 	}
 
-	function writeUint16(input, buffer, offset) {
+	var writeUint16 = function writeUint16(input, buffer, offset) {
 		buffer[offset++] = input >> 8;      //MSB
 		buffer[offset++] = input % 256;     //LSB 
 		return offset;
 	}	
 
-	function writeString(input, utf8Length, buffer, offset) {
+	var writeString = function writeString(input, utf8Length, buffer, offset) {
 		offset = writeUint16(utf8Length, buffer, offset);
 		stringToUTF8(input, buffer, offset);
 		return offset + utf8Length;
 	}	
 
-	function readUint16(buffer, offset) {
+	var readUint16 = function readUint16(buffer, offset) {
 		return 256*buffer[offset] + buffer[offset+1];
 	}	
 
@@ -541,7 +541,7 @@ Paho.MQTT = (function (global) {
 	 * Encodes an MQTT Multi-Byte Integer
 	 * @private 
 	 */
-	function encodeMBI(number) {
+	var encodeMBI = function encodeMBI(number) {
 		var output = new Array(1);
 		var numBytes = 0;
 
@@ -561,7 +561,7 @@ Paho.MQTT = (function (global) {
 	 * Takes a String and calculates its length in bytes when encoded in UTF8.
 	 * @private
 	 */
-	function UTF8Length(input) {
+	var UTF8Length = function UTF8Length(input) {
 		var output = 0;
 		for (var i = 0; i<input.length; i++) 
 		{
@@ -588,7 +588,7 @@ Paho.MQTT = (function (global) {
 	 * Takes a String and writes it into an array as UTF8 encoded bytes.
 	 * @private
 	 */
-	function stringToUTF8(input, output, start) {
+	var stringToUTF8 = function stringToUTF8(input, output, start) {
 		var pos = start;
 		for (var i = 0; i<input.length; i++) {
 			var charCode = input.charCodeAt(i);
@@ -622,7 +622,7 @@ Paho.MQTT = (function (global) {
 		return output;
 	}
 	
-	function parseUTF8(input, offset, length) {
+	var parseUTF8 = function parseUTF8(input, offset, length) {
 		var output = "";
 		var utf16;
 		var pos = offset;
@@ -2138,6 +2138,14 @@ Paho.MQTT = (function (global) {
 	// Module contents.
 	return {
 		Client: Client,
-		Message: Message
+		Message: Message,
+        decodeMessage: decodeMessage,
+    	writeUint16: writeString,
+        writeString: writeString,
+    	readUint16: readUint16,
+        encodeMBI: encodeMBI,
+		UTF8Length: UTF8Length,
+    	stringToUTF8: stringToUTF8,
+    	parseUTF8: parseUTF8
 	};
 })(window);
