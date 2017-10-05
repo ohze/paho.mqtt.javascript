@@ -291,7 +291,7 @@ Paho.MQTT = (function (global) {
 					// Will message is always a string, sent as UTF-8 characters with a preceding length.
 					var willMessagePayloadBytes = this.willMessage.payloadBytes;
 					if (!(willMessagePayloadBytes instanceof Uint8Array))
-						willMessagePayloadBytes = new Uint8Array(payloadBytes);
+						willMessagePayloadBytes = new Uint8Array(this.willMessage.payloadBytes);
 					remLength += willMessagePayloadBytes.byteLength +2;
 				}
 				if (this.userName != undefined)
@@ -1742,7 +1742,7 @@ Paho.MQTT = (function (global) {
 					throw new Error(format(ERROR.INVALID_TYPE, [connectOptions.willMessage, "connectOptions.willMessage"]));
 				// The will message must have a payload that can be represented as a string.
 				// Cause the willMessage to throw an exception if this is not the case.
-				connectOptions.willMessage.stringPayload;
+				//connectOptions.willMessage.stringPayload;
 				
 				if (typeof connectOptions.willMessage.destinationName === "undefined")
 					throw new Error(format(ERROR.INVALID_TYPE, [typeof connectOptions.willMessage.destinationName, "connectOptions.willMessage.destinationName"]));
