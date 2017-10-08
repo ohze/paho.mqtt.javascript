@@ -102,8 +102,8 @@ var PahoMQTT = (function (global) {
 	// Private variables below, these are only visible inside the function closure
 	// which is used to define the module.
 
-	var version = "@VERSION@";
-	var buildLevel = "@BUILDLEVEL@";
+	var version = "1.0.3-ohze";
+	var buildLevel = "2017-10-08 00:00";
 
 	/**
 	 * Unique message type identifiers, with associated
