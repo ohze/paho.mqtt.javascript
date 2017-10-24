@@ -306,7 +306,9 @@ var PahoMQTT = (function (global) {
 					// Will message is always a string, sent as UTF-8 characters with a preceding length.
 					willMessagePayloadBytes = this.willMessage.payloadBytes;
 					if (!(willMessagePayloadBytes instanceof Uint8Array))
-						willMessagePayloadBytes = new Uint8Array(payloadBytes);
+                        // FIXME do we need this change from upstream?
+                        // willMessagePayloadBytes = new Uint8Array(payloadBytes);
+						willMessagePayloadBytes = new Uint8Array(this.willMessage.payloadBytes);
 					remLength += willMessagePayloadBytes.byteLength +2;
 				}
 				if (this.userName !== undefined)
@@ -456,7 +458,7 @@ var PahoMQTT = (function (global) {
 		return buffer;
 	};
 
-	function decodeMessage(input,pos) {
+	var decodeMessage = function decodeMessage(input,pos) {
 	    var startingPos = pos;
 		var first = input[pos];
 		var type = first >> 4;
@@ -505,7 +507,7 @@ var PahoMQTT = (function (global) {
 					pos += 2;
 				}
 
-				var message = new Paho.MQTT.Message(input.subarray(pos, endPos));
+				var message = new Message(input.subarray(pos, endPos));
 				if ((messageInfo & 0x01) == 0x01)
 					message.retained = true;
 				if ((messageInfo & 0x08) == 0x08)
@@ -536,19 +538,19 @@ var PahoMQTT = (function (global) {
 		return [wireMessage,endPos];
 	}
 
-	function writeUint16(input, buffer, offset) {
+	var writeUint16 = function writeUint16(input, buffer, offset) {
 		buffer[offset++] = input >> 8;      //MSB
 		buffer[offset++] = input % 256;     //LSB
 		return offset;
 	}
 
-	function writeString(input, utf8Length, buffer, offset) {
+	var writeString = function writeString(input, utf8Length, buffer, offset) {
 		offset = writeUint16(utf8Length, buffer, offset);
 		stringToUTF8(input, buffer, offset);
 		return offset + utf8Length;
 	}
 
-	function readUint16(buffer, offset) {
+	var readUint16 = function readUint16(buffer, offset) {
 		return 256*buffer[offset] + buffer[offset+1];
 	}
 
@@ -556,7 +558,7 @@ var PahoMQTT = (function (global) {
 	 * Encodes an MQTT Multi-Byte Integer
 	 * @private
 	 */
-	function encodeMBI(number) {
+	var encodeMBI = function encodeMBI(number) {
 		var output = new Array(1);
 		var numBytes = 0;
 
@@ -576,7 +578,7 @@ var PahoMQTT = (function (global) {
 	 * Takes a String and calculates its length in bytes when encoded in UTF8.
 	 * @private
 	 */
-	function UTF8Length(input) {
+	var UTF8Length = function UTF8Length(input) {
 		var output = 0;
 		for (var i = 0; i<input.length; i++)
 		{
@@ -603,7 +605,7 @@ var PahoMQTT = (function (global) {
 	 * Takes a String and writes it into an array as UTF8 encoded bytes.
 	 * @private
 	 */
-	function stringToUTF8(input, output, start) {
+	var stringToUTF8 = function stringToUTF8(input, output, start) {
 		var pos = start;
 		for (var i = 0; i<input.length; i++) {
 			var charCode = input.charCodeAt(i);
@@ -637,7 +639,7 @@ var PahoMQTT = (function (global) {
 		return output;
 	}
 
-	function parseUTF8(input, offset, length) {
+	var parseUTF8 = function parseUTF8(input, offset, length) {
 		var output = "";
 		var utf16;
 		var pos = offset;
@@ -1051,7 +1053,7 @@ var PahoMQTT = (function (global) {
 		this.socket.onerror = scope(this._on_socket_error, this);
 		this.socket.onclose = scope(this._on_socket_close, this);
 
-		this.sendPinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
+		this.sendPinger = new Pinger(this, window, this.connectOptions.keepAliveInterval - this.connectOptions.timeout);
 		this.receivePinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
 		if (this._connectTimeout) {
 			this._connectTimeout.cancel();
@@ -1133,7 +1135,7 @@ var PahoMQTT = (function (global) {
 				  hex = hex.substring(2, hex.length);
 				  byteStream[i++] = x;
 			  }
-			  var payloadMessage = new Paho.MQTT.Message(byteStream);
+			  var payloadMessage = new Message(byteStream);
 
 			  payloadMessage.qos = storedMessage.payloadMessage.qos;
 			  payloadMessage.destinationName = storedMessage.payloadMessage.destinationName;
@@ -1245,7 +1247,7 @@ var PahoMQTT = (function (global) {
 		    	this.receiveBuffer = byteArray.subarray(offset);
 		    }
 		} catch (error) {
-			var errorStack = ((error.hasOwnProperty('stack') == 'undefined') ? error.stack.toString() : "No Error Stack Available");
+			var errorStack = error.hasOwnProperty('stack') ? error.stack.toString() : "No Error Stack Available";
 			this._disconnected(ERROR.INTERNAL_ERROR.code , format(ERROR.INTERNAL_ERROR, [error.message,errorStack]));
 			return;
 		}
@@ -1435,7 +1437,7 @@ var PahoMQTT = (function (global) {
 				this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code , format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
 			}
 		} catch (error) {
-			var errorStack = ((error.hasOwnProperty('stack') == 'undefined') ? error.stack.toString() : "No Error Stack Available");
+			var errorStack = error.hasOwnProperty('stack') ? error.stack.toString() : "No Error Stack Available";
 			this._disconnected(ERROR.INTERNAL_ERROR.code , format(ERROR.INTERNAL_ERROR, [error.message,errorStack]));
 			return;
 		}
@@ -1947,6 +1949,7 @@ var PahoMQTT = (function (global) {
 					throw new Error(format(ERROR.INVALID_TYPE, [connectOptions.willMessage, "connectOptions.willMessage"]));
 				// The will message must have a payload that can be represented as a string.
 				// Cause the willMessage to throw an exception if this is not the case.
+                // FIXME do we need comment out this line after upstream has set it to null?
 				connectOptions.willMessage.stringPayload = null;
 
 				if (typeof connectOptions.willMessage.destinationName === "undefined")
@@ -2406,7 +2409,15 @@ var PahoMQTT = (function (global) {
 	// Module contents.
 	return {
 		Client: Client,
-		Message: Message
+		Message: Message,
+        decodeMessage: decodeMessage,
+    	writeUint16: writeString,
+        writeString: writeString,
+    	readUint16: readUint16,
+        encodeMBI: encodeMBI,
+		UTF8Length: UTF8Length,
+    	stringToUTF8: stringToUTF8,
+    	parseUTF8: parseUTF8
 	};
 })(window);
 return PahoMQTT;
