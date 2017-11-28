@@ -195,7 +195,7 @@ var PahoMQTT = (function (global) {
 		INVALID_STORED_DATA: {code:15, text:"AMQJS0015E Invalid data in local storage key={0} value={1}."},
 		INVALID_MQTT_MESSAGE_TYPE: {code:16, text:"AMQJS0016E Invalid MQTT message type {0}."},
 		MALFORMED_UNICODE: {code:17, text:"AMQJS0017E Malformed Unicode string:{0} {1}."},
-		BUFFER_FULL: {code:18, text:"AMQJS0018E Message buffer is full, maximum buffer size: {0}."},
+		BUFFER_FULL: {code:18, text:"AMQJS0018E Message buffer is full, maximum buffer size: {0}."}
 	};
 
 	/** CONNACK RC Meaning. */
@@ -1439,7 +1439,7 @@ var PahoMQTT = (function (global) {
 		} catch (error) {
 			var errorStack = error.hasOwnProperty('stack') ? error.stack.toString() : "No Error Stack Available";
 			this._disconnected(ERROR.INTERNAL_ERROR.code , format(ERROR.INTERNAL_ERROR, [error.message,errorStack]));
-			return;
+			
 		}
 	};
 
@@ -1599,7 +1599,7 @@ var PahoMQTT = (function (global) {
 					// Start automatic reconnect process for the very first time since last successful connect.
 					this._reconnectInterval = 1;
 					this._reconnect();
-					return;
+					
 				}
 			} else {
 				// Otherwise we never had a connection, so indicate that the connect has failed.
@@ -1623,24 +1623,25 @@ var PahoMQTT = (function (global) {
 	ClientImpl.prototype._trace = function () {
 		// Pass trace message back to client's callback function
 		if (this.traceFunction) {
-			for (var i in arguments)
+			var args = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments));
+			for (var i in args)
 			{
-				if (typeof arguments[i] !== "undefined")
-					arguments.splice(i, 1, JSON.stringify(arguments[i]));
+				if (typeof args[i] !== "undefined")
+					args.splice(i, 1, JSON.stringify(args[i]));
 			}
-			var record = Array.prototype.slice.call(arguments).join("");
+			var record = Array.prototype.slice.call(args).join("");
 			this.traceFunction ({severity: "Debug", message: record	});
 		}
 
 		//buffer style trace
 		if ( this._traceBuffer !== null ) {
-			for (var i = 0, max = arguments.length; i < max; i++) {
+			for (var i = 0, max = args.length; i < max; i++) {
 				if ( this._traceBuffer.length == this._MAX_TRACE_ENTRIES ) {
 					this._traceBuffer.shift();
 				}
-				if (i === 0) this._traceBuffer.push(arguments[i]);
-				else if (typeof arguments[i] === "undefined" ) this._traceBuffer.push(arguments[i]);
-				else this._traceBuffer.push("  "+JSON.stringify(arguments[i]));
+				if (i === 0) this._traceBuffer.push(args[i]);
+				else if (typeof args[i] === "undefined" ) this._traceBuffer.push(args[i]);
+				else this._traceBuffer.push("  "+JSON.stringify(args[i]));
 		   }
 		}
 	};
